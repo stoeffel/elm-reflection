@@ -157,16 +157,20 @@ toType "DocTest" = Just DocTest
 toType "ExposesTests" = Just ExposesTests
 toType _ = Nothing
 
+
 -- |
 -- >>> containsOneOf Nothing $ ElmFile "name" "root" []
 -- False
 -- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" []
 -- False
+-- >>> containsOneOf (Just []) $ ElmFile "name" "root" []
+-- True
 -- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" [Test]
 -- True
 containsOneOf :: Maybe [Type] -> ElmFile -> Bool
 containsOneOf maybeOneOf (ElmFile _ _ types) =
   case maybeOneOf of
+    Just [] -> True
     Just oneOf -> not $ L.null $ L.intersect oneOf types
     Nothing -> False
 
