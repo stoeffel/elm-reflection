@@ -25,7 +25,7 @@ $ elm-reflection DocTest ExposesTests > tests.json
     },
     {
         "path": "/Users/stoeffel/src/tests/FooSpec.elm",
-        "types": [Test, ExposesTests],
+        "types": ["Test", "ExposesTests"],
         "name": "FooSpec"
     }
 ]
