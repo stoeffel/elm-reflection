@@ -124,10 +124,15 @@ containsElmTest text =
 
 containsExposesTests :: String -> [Type]
 containsExposesTests text =
-  if L.isInfixOf "tests : Test" text then
+  if L.any hasToplevelTests $ L.lines text then
     [ExposesTests]
   else
     []
+
+
+hasToplevelTests :: String -> Bool
+hasToplevelTests = L.isPrefixOf "tests "
+
 
 containsDocTest :: String -> [Type]
 containsDocTest text =
