@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module Lib (getElmFiles, getJson) where
+module Lib (getElmFiles, getJson, toType, containsOneOf) where
 
 
 import Control.Monad (forM)
@@ -17,9 +17,10 @@ import qualified System.FilePath.Posix as FP
 
 data Type
   = Test
+  | ExposesTests
   | DocTest
   | Css
-  deriving (Generic, Show)
+  deriving (Generic, Show, Eq)
 
 
 data ElmFile = ElmFile
@@ -81,6 +82,7 @@ parseFile path = do
       path $
       L.concat
         [ containsElmTest content
+        , containsExposesTests content
         , containsDocTest content
         , containsCss content
         ]
@@ -120,6 +122,13 @@ containsElmTest text =
     []
 
 
+containsExposesTests :: String -> [Type]
+containsExposesTests text =
+  if L.isInfixOf "tests : Test" text then
+    [ExposesTests]
+  else
+    []
+
 containsDocTest :: String -> [Type]
 containsDocTest text =
   if L.isInfixOf "    >>> " text then
@@ -134,6 +143,32 @@ containsCss text =
     [Css]
   else
     []
+
+
+-- |
+-- >>> toType "foo"
+-- Nothing
+-- >>> toType "Css"
+-- Just Css
+toType :: String -> Maybe Type
+toType "Css" = Just Css
+toType "Test" = Just Test
+toType "DocTest" = Just DocTest
+toType "ExposesTests" = Just ExposesTests
+toType _ = Nothing
+
+-- |
+-- >>> containsOneOf Nothing $ ElmFile "name" "root" []
+-- False
+-- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" []
+-- False
+-- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" [Test]
+-- True
+containsOneOf :: Maybe [Type] -> ElmFile -> Bool
+containsOneOf maybeOneOf (ElmFile _ _ types) =
+  case maybeOneOf of
+    Just oneOf -> not $ L.null $ L.intersect oneOf types
+    Nothing -> False
 
 
 getJson :: ToJSON a => a -> String
