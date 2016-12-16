@@ -114,40 +114,51 @@ elmModuleName =
   . T.pack
 
 
+containsSnippet :: Type -> String -> String -> [Type]
+containsSnippet t token text =
+  if L.any (L.isPrefixOf token) $ L.lines text then
+    [t]
+  else
+    []
+
+-- |
+-- >>> containsElmTest $ unlines ["module Foo exposing (..)", "import Test"]
+-- [Test]
+-- >>> containsElmTest $ unlines ["module Foo exposing (..)", "import String"]
+-- []
 containsElmTest :: String -> [Type]
-containsElmTest text =
-  if L.isInfixOf "import Test " text then
-    [Test]
-  else
-    []
+containsElmTest = containsSnippet Test "import Test"
 
 
+-- |
+-- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "tests : Test", "tests = []"]
+-- [ExposesTests]
+-- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "spec : Test", "spec = []"]
+-- []
 containsExposesTests :: String -> [Type]
-containsExposesTests text =
-  if L.any hasToplevelTests $ L.lines text then
-    [ExposesTests]
-  else
-    []
+containsExposesTests = containsSnippet ExposesTests "tests "
 
 
-hasToplevelTests :: String -> Bool
-hasToplevelTests = L.isPrefixOf "tests "
-
-
+-- |
+-- >>> containsDocTest $ unlines ["module Foo exposing (..)", "{-|", "    >>> foo 1"]
+-- [DocTest]
+-- >>> containsDocTest $ unlines ["module Foo exposing (..)", "spec : Test", "spec = []"]
+-- []
+-- >>> containsDocTest $ unlines ["module Foo exposing (..)", "{-|", "      >>> foo 1"]
+-- []
 containsDocTest :: String -> [Type]
-containsDocTest text =
-  if L.isInfixOf "    >>> " text then
-    [DocTest]
-  else
-    []
+containsDocTest = containsSnippet DocTest "    >>> "
 
 
+-- |
+-- >>> containsCss $ unlines ["module Foo exposing (..)", "import Css"]
+-- [Css]
+-- >>> containsCss $ unlines ["module Foo exposing (..)", "import Css as C"]
+-- [Css]
+-- >>> containsCss $ unlines ["module Foo exposing (..)", "import String"]
+-- []
 containsCss :: String -> [Type]
-containsCss text =
-  if L.isInfixOf "import Css " text then
-    [Css]
-  else
-    []
+containsCss = containsSnippet Css "import Css"
 
 
 -- |
