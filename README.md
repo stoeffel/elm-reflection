@@ -1,4 +1,6 @@
 # elm-reflection
+> find all elm files in a directory (recursively) and get infos about them.
+It will tell you the module name and if it contains elm-css or elm-tests/doc-tests.
 
 ## installation
 
