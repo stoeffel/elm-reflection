@@ -5,6 +5,7 @@ module Lib (getElmFiles, getJson, toType, containsOneOf) where
 import Control.Monad (forM)
 import Data.Aeson
 import Data.Aeson.Encode.Pretty
+import Data.Maybe (catMaybes)
 import Data.Text.Encoding
 import GHC.Generics
 import System.FilePath ((</>))
@@ -68,24 +69,22 @@ parseIfFile topdir name = do
     if isDirectory then
       getElmFiles path
     else if L.isSuffixOf "elm" name then
-      parseFile path
+      fmap (parseFile path) $ readFile path
     else
       return []
 
 
-parseFile :: FilePath -> IO [ElmFile]
-parseFile path = do
-  content <- readFile path
-  return [
-    ElmFile
-      (elmModuleName content)
-      path $
-      L.concat
-        [ containsElmTest content
-        , containsExposesTests content
-        , containsDocTest content
-        , containsCss content
-        ]
+-- |
+-- >>> parseFile ("src" </> "Foo.elm") $ unlines ["module Foo exposing (..)", "import Test", "import Css"]
+-- [ElmFile {name = "Foo", path = "src/Foo.elm", types = [Test,Css]}]
+parseFile :: FilePath -> String -> [ElmFile]
+parseFile path content = [ ElmFile name path types ] where
+  name = (elmModuleName content)
+  types = catMaybes
+    [ containsElmTest content
+    , containsExposesTests content
+    , containsDocTest content
+    , containsCss content
     ]
 
 
@@ -114,50 +113,50 @@ elmModuleName =
   . T.pack
 
 
-containsSnippet :: Type -> String -> String -> [Type]
+containsSnippet :: Type -> String -> String -> Maybe Type
 containsSnippet t token text =
   if L.any (L.isPrefixOf token) $ L.lines text then
-    [t]
+    Just t
   else
-    []
+    Nothing
 
 -- |
 -- >>> containsElmTest $ unlines ["module Foo exposing (..)", "import Test"]
--- [Test]
+-- Just Test
 -- >>> containsElmTest $ unlines ["module Foo exposing (..)", "import String"]
--- []
-containsElmTest :: String -> [Type]
+-- Nothing
+containsElmTest :: String -> Maybe Type
 containsElmTest = containsSnippet Test "import Test"
 
 
 -- |
 -- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "tests : Test", "tests = []"]
--- [ExposesTests]
+-- Just ExposesTests
 -- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "spec : Test", "spec = []"]
--- []
-containsExposesTests :: String -> [Type]
+-- Nothing
+containsExposesTests :: String -> Maybe Type
 containsExposesTests = containsSnippet ExposesTests "tests "
 
 
 -- |
 -- >>> containsDocTest $ unlines ["module Foo exposing (..)", "{-|", "    >>> foo 1"]
--- [DocTest]
+-- Just DocTest
 -- >>> containsDocTest $ unlines ["module Foo exposing (..)", "spec : Test", "spec = []"]
--- []
+-- Nothing
 -- >>> containsDocTest $ unlines ["module Foo exposing (..)", "{-|", "      >>> foo 1"]
--- []
-containsDocTest :: String -> [Type]
+-- Nothing
+containsDocTest :: String -> Maybe Type
 containsDocTest = containsSnippet DocTest "    >>> "
 
 
 -- |
 -- >>> containsCss $ unlines ["module Foo exposing (..)", "import Css"]
--- [Css]
+-- Just Css
 -- >>> containsCss $ unlines ["module Foo exposing (..)", "import Css as C"]
--- [Css]
+-- Just Css
 -- >>> containsCss $ unlines ["module Foo exposing (..)", "import String"]
--- []
-containsCss :: String -> [Type]
+-- Nothing
+containsCss :: String -> Maybe Type
 containsCss = containsSnippet Css "import Css"
 
 
@@ -167,28 +166,23 @@ containsCss = containsSnippet Css "import Css"
 -- >>> toType "Css"
 -- Just Css
 toType :: String -> Maybe Type
-toType "Css" = Just Css
-toType "Test" = Just Test
-toType "DocTest" = Just DocTest
+toType "Css"          = Just Css
+toType "Test"         = Just Test
+toType "DocTest"      = Just DocTest
 toType "ExposesTests" = Just ExposesTests
-toType _ = Nothing
+toType _              = Nothing
 
 
 -- |
--- >>> containsOneOf Nothing $ ElmFile "name" "root" []
+-- >>> containsOneOf ([Css, Test]) $ ElmFile "name" "root" []
 -- False
--- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" []
--- False
--- >>> containsOneOf (Just []) $ ElmFile "name" "root" []
+-- >>> containsOneOf [] $ ElmFile "name" "root" []
 -- True
--- >>> containsOneOf (Just [Css, Test]) $ ElmFile "name" "root" [Test]
+-- >>> containsOneOf ([Css, Test]) $ ElmFile "name" "root" [Test]
 -- True
-containsOneOf :: Maybe [Type] -> ElmFile -> Bool
-containsOneOf maybeOneOf (ElmFile _ _ types) =
-  case maybeOneOf of
-    Just [] -> True
-    Just oneOf -> not $ L.null $ L.intersect oneOf types
-    Nothing -> False
+containsOneOf :: [Type] -> ElmFile -> Bool
+containsOneOf [] _                      = True
+containsOneOf oneOf (ElmFile _ _ types) = not $ L.null $ L.intersect oneOf types
 
 
 getJson :: ToJSON a => a -> String
