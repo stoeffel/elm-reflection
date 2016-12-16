@@ -1,0 +1,26 @@
+{
+  "name": "elm-reflection",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    ".stack-work/install/x86_64-osx/lts-7.13/8.0.1/bin/elm-reflection"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "stack build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stoeffel/elm-reflection.git"
+  },
+  "author": "schtoeffel",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/stoeffel/elm-reflection/issues"
+  },
+  "homepage": "https://github.com/stoeffel/elm-reflection#readme"
+}
