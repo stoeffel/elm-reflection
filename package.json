@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "bin": "bin"
   },
-  "files": [
-    ".stack-work/install/x86_64-osx/lts-7.13/8.0.1/bin/elm-reflection"
-  ],
+  "bin": {
+    "elm-reflection": "bin/elm-reflection"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "stack build"
+    "prepublish": "sh ./build.sh"
   },
   "repository": {
     "type": "git",
