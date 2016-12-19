@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module Lib (getElmFiles, getJson, toType, containsOneOf) where
+module Lib (parse, getJson, toType, containsOneOf) where
 
 
 import Control.Monad (forM)
@@ -12,8 +12,6 @@ import System.FilePath ((</>))
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.List as L
 import qualified Data.Text as T
-import qualified System.Directory as SD
-import qualified System.FilePath.Posix as FP
 
 
 data Type
@@ -44,41 +42,15 @@ instance ToJSON Type where
 
 instance FromJSON Type
 
-
-excludeDirs :: [String]
-excludeDirs =
-  [ "."
-  , ".."
-  , "elm-stuff"
-  , "node_modules"
-  ]
-
-
-getElmFiles :: FilePath -> IO [ElmFile]
-getElmFiles topdir = do
-  names <- SD.getDirectoryContents topdir
-  let properNames = filter (`L.notElem` excludeDirs) names
-  paths <- forM properNames (parseIfFile topdir)
-  return (concat paths)
-
-
-parseIfFile :: FilePath -> String -> IO [ElmFile]
-parseIfFile topdir name = do
-    let path = topdir </> name
-    isDirectory <- SD.doesDirectoryExist path
-    if isDirectory then
-      getElmFiles path
-    else if L.isSuffixOf "elm" name then
-      fmap (parseFile path) $ readFile path
-    else
-      return []
+parse :: FilePath -> IO ElmFile
+parse path = fmap (parseFile path) $ readFile path
 
 
 -- |
 -- >>> parseFile ("src" </> "Foo.elm") $ unlines ["module Foo exposing (..)", "import Test", "import Css"]
--- [ElmFile {name = "Foo", path = "src/Foo.elm", types = [Test,Css]}]
-parseFile :: FilePath -> String -> [ElmFile]
-parseFile path content = [ ElmFile name path types ] where
+-- ElmFile {name = "Foo", path = "src/Foo.elm", types = [Test,Css]}
+parseFile :: FilePath -> String -> ElmFile
+parseFile path content = ElmFile name path types where
   name = (elmModuleName content)
   types = catMaybes
     [ containsElmTest content
