@@ -3,6 +3,7 @@
 module Lib where
 
 
+import Control.Applicative
 import Control.Monad (forM)
 import Data.Aeson
 import Data.Aeson.Encode.Pretty
@@ -29,6 +30,9 @@ data ElmFile = ElmFile
   , types :: [Type]
   } deriving (Generic, Show)
 
+data ElmPackage = ElmPackage
+  { sourceDirectories :: [FilePath]
+  } deriving (Generic, Show)
 
 instance ToJSON ElmFile where
   toEncoding = genericToEncoding defaultOptions
@@ -42,6 +46,16 @@ instance ToJSON Type where
 
 
 instance FromJSON Type
+
+
+instance ToJSON ElmPackage where
+  toEncoding = genericToEncoding defaultOptions
+
+
+instance FromJSON ElmPackage where
+    parseJSON (Object v) = ElmPackage <$>
+                           v .: "source-directories"
+    parseJSON _          = empty
 
 parse :: FilePath -> IO ElmFile
 parse path = fmap (parseFile path) $ readFile path

@@ -29,11 +29,13 @@ executable elm-reflection
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , reflection
+                     , aeson
+                     , bytestring
                      , directory
                      , filemanip
                      , filepath
                      , optparse-applicative >= 0.13 && < 0.14
+                     , reflection
                      , text
   default-language:    Haskell2010
 
