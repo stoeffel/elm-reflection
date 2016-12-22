@@ -10,10 +10,19 @@ $ npm i elm-reflection -g
 
 ## Usage
 
+```
+Usage: elm-reflection [--path ARG] [--filter ARG]
+
+Available options:
+  -h,--help                Show this help text
+  --path ARG               Default is whatever is in your "source-directories"
+  --filter ARG             Possible values: [Test,ExposesTests,DocTest,Css]
+```
+
 ```bash
 $ elm-reflection > files.json
-$ elm-reflection Css > css-files.json
-$ elm-reflection DocTest ExposesTests > tests.json
+$ elm-reflection -- filter Css > css-files.json
+$ elm-reflection --filter DocTest,ExposesTests > tests.json
 ```
 
 ## The Json
