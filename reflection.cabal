@@ -33,6 +33,8 @@ executable elm-reflection
                      , directory
                      , filemanip
                      , filepath
+                     , optparse-applicative >= 0.13 && < 0.14
+                     , text
   default-language:    Haskell2010
 
 test-suite reflection-test

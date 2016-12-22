@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
-module Lib (parse, getJson, toType, containsOneOf) where
+{-# LANGUAGE OverloadedStrings #-}
+module Lib where
 
 
 import Control.Monad (forM)
@@ -19,7 +20,7 @@ data Type
   | ExposesTests
   | DocTest
   | Css
-  deriving (Generic, Show, Eq)
+  deriving (Generic, Show, Eq, Enum, Bounded)
 
 
 data ElmFile = ElmFile
@@ -137,7 +138,7 @@ containsCss = containsSnippet Css "import Css"
 -- Nothing
 -- >>> toType "Css"
 -- Just Css
-toType :: String -> Maybe Type
+toType :: T.Text -> Maybe Type
 toType "Css"          = Just Css
 toType "Test"         = Just Test
 toType "DocTest"      = Just DocTest
