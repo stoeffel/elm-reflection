@@ -117,12 +117,12 @@ containsElmTest = containsSnippet Test "import Test"
 
 
 -- |
--- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "tests : Test", "tests = []"]
+-- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "suite : Test", "suite = []"]
 -- Just ExposesTests
 -- >>> containsExposesTests $ unlines ["module Foo exposing (..)", "spec : Test", "spec = []"]
 -- Nothing
 containsExposesTests :: String -> Maybe Type
-containsExposesTests = containsSnippet ExposesTests "tests "
+containsExposesTests = containsSnippet ExposesTests "suite "
 
 
 -- |
