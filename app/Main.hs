@@ -20,7 +20,7 @@ main :: IO ()
 main = do
   Opts path types <- execParser opts
   cwd <- getCurrentDirectory
-  files <- find (excludedDirs filePath) (filePath ~~? (cwd </> path) &&? extension ==? ".elm") cwd
+  files <- find (excludedDirs filePath) (filePath ~~? cwd </> path) cwd
   parsed <- M.sequence $ L.map parse files
   filteredFiles <- return $ L.filter (containsOneOf types) parsed
   putStrLn $ getJson filteredFiles
