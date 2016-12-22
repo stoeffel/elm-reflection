@@ -134,6 +134,7 @@ containsCss = containsSnippet Css "import Css"
 
 
 -- |
+-- >>> :set -XOverloadedStrings
 -- >>> toType "foo"
 -- Nothing
 -- >>> toType "Css"
