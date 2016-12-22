@@ -11,6 +11,7 @@ import Data.Maybe (catMaybes)
 import Data.Text.Encoding
 import GHC.Generics
 import System.FilePath ((</>))
+import Text.Regex.Posix ((=~))
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.List as L
 import qualified Data.Text as T
@@ -66,7 +67,7 @@ parse path = fmap (parseFile path) $ readFile path
 -- ElmFile {name = "Foo", path = "src/Foo.elm", types = [Test,Css]}
 parseFile :: FilePath -> String -> ElmFile
 parseFile path content = ElmFile name path types where
-  name = (elmModuleName content)
+  name = (elmModuleName $ lines content)
   types = catMaybes
     [ containsElmTest content
     , containsExposesTests content
@@ -76,33 +77,35 @@ parseFile path content = ElmFile name path types where
 
 
 -- |
--- >>> elmModuleName "module MyApp.Foo exposing (..)"
+-- >>> elmModuleName ["module MyApp.Foo exposing (..)"]
 -- "MyApp.Foo"
 --
--- >>> elmModuleName "port module MyApp.Foo exposing (..)"
+-- >>> elmModuleName ["port module MyApp.Foo exposing (..)"]
 -- "MyApp.Foo"
 --
--- >>> elmModuleName "effect module MyApp.Foo exposing (..)"
+-- >>> elmModuleName ["effect module MyApp.Foo exposing (..)"]
 -- "MyApp.Foo"
 --
--- >>> elmModuleName "effect module MyApp.Foo \n    exposing (..)"
+-- >>> elmModuleName ["effect module MyApp.Foo ", "    exposing (..)"]
 -- "MyApp.Foo"
-elmModuleName :: String -> String
-elmModuleName =
+elmModuleName :: [String] -> String
+elmModuleName [] = "Unkown module"
+elmModuleName (x:_) =
   T.unpack
-  . T.strip
-  . T.replace (T.pack "port ") (T.pack "")
-  . T.replace (T.pack "effect ") (T.pack "")
-  . T.replace (T.pack "module ") (T.pack "")
-  . T.replace (T.pack "\n") (T.pack "")
-  . L.head
-  . T.splitOn (T.pack "exposing")
-  . T.pack
+  $ T.strip
+  $ T.replace (T.pack "port ") (T.pack "")
+  $ T.replace (T.pack "effect ") (T.pack "")
+  $ T.replace (T.pack "module ") (T.pack "")
+  $ T.replace (T.pack "\n") (T.pack "")
+  $ L.head
+  $ T.splitOn (T.pack "exposing")
+  $ T.pack
+  x
 
 
 containsSnippet :: Type -> String -> String -> Maybe Type
-containsSnippet t token text =
-  if L.any (L.isPrefixOf token) $ L.lines text then
+containsSnippet t token x =
+  if x =~ ("^" ++ token) :: Bool  then
     Just t
   else
     Nothing

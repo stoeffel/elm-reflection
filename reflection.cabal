@@ -21,6 +21,7 @@ library
                      , aeson-pretty
                      , bytestring
                      , filepath
+                     , regex-posix
                      , text
   default-language:    Haskell2010
 
