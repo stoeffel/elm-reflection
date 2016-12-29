@@ -1,4 +1,5 @@
 dist
+dist_binaries
 dist-*
 cabal-dev
 *.o
@@ -18,3 +19,5 @@ cabal.sandbox.config
 .stack-work/
 cabal.project.local
 .HTF/
+deploy_key
+npm-debug.log

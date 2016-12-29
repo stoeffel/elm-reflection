@@ -1,18 +1,22 @@
 {
   "name": "elm-reflection",
-  "version": "0.0.11",
+  "version": "0.2.0",
   "description": "",
   "main": "index.js",
   "directories": {
     "test": "test",
-    "bin": "bin"
+    "bin": "binaries"
   },
   "bin": {
-    "elm-reflection": "bin/elm-reflection"
+    "elm-reflection": "binaries/elm-reflection"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install": "node install.js"
   },
+  "files": [
+    "install.js",
+    "binaries"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stoeffel/elm-reflection.git"
@@ -22,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/stoeffel/elm-reflection/issues"
   },
-  "homepage": "https://github.com/stoeffel/elm-reflection#readme"
+  "homepage": "https://github.com/stoeffel/elm-reflection#readme",
+  "dependencies": {
+    "binstall": "^1.2.0"
+  }
 }

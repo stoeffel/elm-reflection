@@ -1,0 +1,44 @@
+sudo: false
+cache:
+  directories:
+  - $HOME/.stack
+os:
+  - linux
+  - osx
+addons:
+  apt:
+    sources:
+    - hvr-ghc
+    packages:
+    - ghc-8.0.1
+env:
+  global:
+  - secure: kVpo8WM2cP/7uk6+IkeiC//6Ar8uE8nB9gTGUyHk1pWt9Hm5szzkLNdAWiFGgXYOflRgWa5WFlQTI5ukizeRpD24yN/AiUTn3EgpCT6ntrDLeMydzybjrQMizRis4+X7wNJMANtYkUej0RdFTs0eY4zejYeCypin7Q/Sp5TsGtP70OBSVebIMGBKMLv1ShpRsdHCEPKQEZBqe2fR916QdRIINvSL2Y01uUqqkXLj7rQyFBQG4xdaaEXti+noUbFkUKPcI91UFLlJ6MB+Z9ZMfXjuAPG2+BHVSMZVXBfvw+OnFLJf64wJKXAfOWzXNPe6xjz9ss7fjEFyuruCwJjKwSUiwYXIf6+jKI+cPAqiPOmX8TCIotHbPYrZHcBWhbf4xrl1S3Trjvg2l9LItFnISLNx/tw0HOxLWMqUFuYbYWenwkKXCJkD8C6fhOosFvKOpiaR5wZ8+HJaL1Ba7zaN6WWLix+SQDZ3KNu4oiGyqIVTYc+OO13wjfUDPMpbchxi/TSp0f58MI5LFhJNunIPY5Hc2cuPqgumzIfagc2cKnWVnzqhgqF+Nn78bjw9UOnAlfcj8AGOHbds8oTwxoyrMGpGw6RLf0iCAHnbRvWM6HyLrJpKPnZbnYHqDODwfMFcMkmvpLVKtdvtZymnzCsxk18Rok8XbHu8mj1KO1JRuQ8=
+before_install:
+  - if [ ${TRAVIS_OS_NAME} == "osx" ]; then brew install curl; fi
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];
+    then travis_retry curl -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 -C ~/.local/bin '*/stack';
+    else travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
+    fi
+  - stack config set system-ghc --global true
+  - export PATH=/opt/ghc/8.0.1/bin:$PATH
+  - if [ ${TRAVIS_OS_NAME} == "osx" ]; then export BINARY_OS_NAME=darwin; else export
+    BINARY_OS_NAME=$TRAVIS_OS_NAME; fi
+install:
+  - stack update
+  - stack setup
+  - stack build
+before_script:
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];
+    then export BINARY_OS_NAME=darwin; else
+    export BINARY_OS_NAME=$TRAVIS_OS_NAME;
+    fi
+script:
+  - mkdir dist_binaries
+  - cp .stack-work/dist/*/*/*/elm-reflection/elm-reflection dist_binaries
+  - du -hs dist_binaries
+  - tar cvzf binaries.tar.gz dist_binaries
+  - du -hs binaries.tar.gz
+  - curl -T binaries.tar.gz -ustoeffel:$KEY https://api.bintray.com/content/stoeffel/elm-reflection/elm-reflection/0.2.0/0.2.0/$BINARY_OS_NAME-x64.tar.gz
