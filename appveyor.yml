@@ -1,0 +1,13 @@
+environment:
+  secure: kVpo8WM2cP/7uk6+IkeiC//6Ar8uE8nB9gTGUyHk1pWt9Hm5szzkLNdAWiFGgXYOflRgWa5WFlQTI5ukizeRpD24yN/AiUTn3EgpCT6ntrDLeMydzybjrQMizRis4+X7wNJMANtYkUej0RdFTs0eY4zejYeCypin7Q/Sp5TsGtP70OBSVebIMGBKMLv1ShpRsdHCEPKQEZBqe2fR916QdRIINvSL2Y01uUqqkXLj7rQyFBQG4xdaaEXti+noUbFkUKPcI91UFLlJ6MB+Z9ZMfXjuAPG2+BHVSMZVXBfvw+OnFLJf64wJKXAfOWzXNPe6xjz9ss7fjEFyuruCwJjKwSUiwYXIf6+jKI+cPAqiPOmX8TCIotHbPYrZHcBWhbf4xrl1S3Trjvg2l9LItFnISLNx/tw0HOxLWMqUFuYbYWenwkKXCJkD8C6fhOosFvKOpiaR5wZ8+HJaL1Ba7zaN6WWLix+SQDZ3KNu4oiGyqIVTYc+OO13wjfUDPMpbchxi/TSp0f58MI5LFhJNunIPY5Hc2cuPqgumzIfagc2cKnWVnzqhgqF+Nn78bjw9UOnAlfcj8AGOHbds8oTwxoyrMGpGw6RLf0iCAHnbRvWM6HyLrJpKPnZbnYHqDODwfMFcMkmvpLVKtdvtZymnzCsxk18Rok8XbHu8mj1KO1JRuQ8=
+
+before_build:
+  - cmd: curl -sS -ostack.zip -L --insecure http://www.stackage.org/stack/windows-i386
+  - cmd: 7z x stack.zip stack.exe
+  - cmd: stack update
+  - cmd: stack setup
+  - cmd: stack build
+  - cmd: mkdir dist_binaries
+  - ps: Copy-Item  -Recurse .stack-work/dist/*/*/*/elm-reflection/elm-reflection  dist_binaries
+  - cmd: tar cvzf binaries.tar.gz dist_binaries
+  - cmd: curl -T binaries.tar.gz -ustoeffel:%KEY% https://api.bintray.com/content/stoeffel/elm-reflection/elm-reflection/0.2.0/0.2.0/win32-x64.tar.gz
